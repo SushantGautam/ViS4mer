@@ -40,7 +40,7 @@ print(y.shape)   #this should be of dimention [2,197,1024]
 print('Total videos: ', len(all_mp4_chunks))
 print('Total unique videos: ', len(set(all_mp4_chunks)))
 
-random.shuffle(all_mp4_chunks) #helps if you want to run multiple instances parallelly
+# random.shuffle(all_mp4_chunks) #helps if you want to run multiple instances parallelly
 
 cnt = 0
 for video_id in all_mp4_chunks:

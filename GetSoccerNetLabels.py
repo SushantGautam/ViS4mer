@@ -37,8 +37,8 @@ for _, group in grouped_df:
     sorted_group['gameTime'] = pd.to_datetime(sorted_group['gameTime'].astype(str))
     sorted_group['prev_event_time'] = sorted_group['gameTime'].shift(1)
     sorted_group['next_event_time'] = sorted_group['gameTime'].shift(-1)
-    sorted_group['time_diff_before'] = (sorted_group['gameTime'] - sorted_group['prev_event_time']).dt.total_seconds().astype('Int64')
-    sorted_group['time_diff_after'] = (sorted_group['next_event_time'] - sorted_group['gameTime']).dt.total_seconds().astype('Int64')
+    sorted_group['time_diff_before'] = (sorted_group['gameTime'] - sorted_group['prev_event_time']).dt.total_seconds().astype('Int64', errors='ignore')
+    sorted_group['time_diff_after'] = (sorted_group['next_event_time'] - sorted_group['gameTime']).dt.total_seconds().astype('Int64', errors='ignore')
     result_df = pd.concat([result_df, sorted_group.iloc[:, 9:] ])
 
 
@@ -47,6 +47,10 @@ df = pd.concat([df, result_df], axis=1)
 
 #exclude events that where time_diff_before and time_diff_after are less than 5 seconds
 df_5Plus = df[(df['time_diff_before'] > 5) & (df['time_diff_after'] > 5)]
+# find most occuring 8 labels and exclude other labels
+most_occuring_labels = df_5Plus.groupby(['label']).size().sort_values(ascending=False).head(8).index
+df_5Plus = df_5Plus[df_5Plus['label'].isin(most_occuring_labels)]
+
 #exclude events that where time_diff_before are less than 10 seconds
 df_Bef10Plu = df[(df['time_diff_before'] > 10)]
 #exclude events that where time_diff_after are less than 10 seconds
@@ -94,6 +98,6 @@ df_edit['UrlLocal'] = df_edit['League']+'/'+df_edit['year']+'/'+df_edit['GameNam
 # mkv  to mp4 and also crop video
 df_edit['ffmpeg_code'] = "ffmpeg  -n  -i './SoccerNet/"+df_edit['UrlLocal']+"' -ss "+df_edit['cropStart'].apply(lambda x: str(x))+" -to "+df_edit['cropEnd'].apply(lambda x: str(x))+" -c copy './SoccerNetChunks/"+ df_edit['finalName']+"'"
 # execute ffmpeg_code
-df_edit['ffmpeg_code'].apply(lambda x: os.system(x))
+# df_edit['ffmpeg_code'].apply(lambda x: os.system(x))
 df_edit
 # ls -l SoccerNetChunks/ | egrep -c '^-'
