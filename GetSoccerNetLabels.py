@@ -40,6 +40,8 @@ for _, group in grouped_df:
     sorted_group['time_diff_before'] = (sorted_group['gameTime'] - sorted_group['prev_event_time']).dt.total_seconds().astype('Int64')
     sorted_group['time_diff_after'] = (sorted_group['next_event_time'] - sorted_group['gameTime']).dt.total_seconds().astype('Int64')
     result_df = pd.concat([result_df, sorted_group.iloc[:, 9:] ])
+
+
 #concat result_df and df
 df = pd.concat([df, result_df], axis=1)
 
@@ -58,3 +60,40 @@ fig.savefig('example.png')
 
 # give number of event of each label in each df_5Plus 
 df_5Plus.groupby(['label']).size()
+
+
+def find_consecutive_event_counts(events_list):
+    consecutive_event_counts = {}
+    for sublist in events_list:
+        for i in range(len(sublist) - 1):
+            consecutive_event = tuple(sublist[i:i+2])
+            if consecutive_event in consecutive_event_counts:
+                consecutive_event_counts[consecutive_event] += 1
+            else:
+                consecutive_event_counts[consecutive_event] = 1
+    sorted_counts = sorted(consecutive_event_counts.items(), key=lambda x: x[1], reverse=True)
+    sorted_result = {k: v for k, v in sorted_counts}
+    return sorted_result
+
+# study consecutive events 
+# all_events = list(df[(df['time_diff_before'] > 20) & (df['time_diff_after'] > 20)].groupby(['GameName'])['label'].apply(list).values)
+# find_consecutive_event_counts(all_events)
+
+import datetime
+
+# create df_edit with gameName, label, cropStart (gameTime - 5 seconds), cropEnd (gameTime + 5 seconds)
+df_edit = df_5Plus[['League', 'year', 'GameName', 'label', 'gameTime','HalfNumber']]
+current_date = datetime.datetime.now().date()
+df_edit['cropStart'] = [datetime.datetime.combine(current_date, time) - datetime.timedelta(seconds=5) for time in df_edit['gameTime']]
+df_edit['cropStart'] = df_edit['cropStart'].dt.time
+df_edit['cropEnd'] = [datetime.datetime.combine(current_date, time) + datetime.timedelta(seconds=5) for time in df_edit['gameTime']]
+df_edit['cropEnd'] = df_edit['cropEnd'].dt.time
+# create finalName column from GameName space deleted, and with gameTime
+df_edit['finalName'] = df_edit['GameName'].str.replace(' ', '')+'_'+df_edit['HalfNumber']+"_"+df_edit['gameTime'].astype(str).str.replace(':', '_') +"|"+ df_edit['label'].str.replace(' ', '')+'.mp4'
+df_edit['UrlLocal'] = df_edit['League']+'/'+df_edit['year']+'/'+df_edit['GameName']+ '/' + df_edit['HalfNumber']+"_224p.mkv"
+# mkv  to mp4 and also crop video
+df_edit['ffmpeg_code'] = "ffmpeg  -n  -i './SoccerNet/"+df_edit['UrlLocal']+"' -ss "+df_edit['cropStart'].apply(lambda x: str(x))+" -to "+df_edit['cropEnd'].apply(lambda x: str(x))+" -c copy './SoccerNetChunks/"+ df_edit['finalName']+"'"
+# execute ffmpeg_code
+df_edit['ffmpeg_code'].apply(lambda x: os.system(x))
+df_edit
+# ls -l SoccerNetChunks/ | egrep -c '^-'
