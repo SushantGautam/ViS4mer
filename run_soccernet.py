@@ -250,7 +250,7 @@ def eval(args, dataloader, model, epoch, criterion, split):
 #tasks = [('relationship', 4), ('way_speaking', 5), ('scene', 6), ('director', 10),
 #         ('writer', 10), ('year', 9), ('like_ratio', -1), ('view_count', -1), ('genre', 4)]
 
-tasks = [('relationship', -1)]
+tasks = [('relationship', 8)]
 
 def main():
     args = parser.parse_args()
