@@ -101,3 +101,8 @@ df_edit['ffmpeg_code'] = "ffmpeg  -n  -i './SoccerNet/"+df_edit['UrlLocal']+"' -
 # df_edit['ffmpeg_code'].apply(lambda x: os.system(x))
 df_edit
 # ls -l SoccerNetChunks/ | egrep -c '^-'
+
+# # remove all files in 
+# files_to_remove = "./SoccerNetChunksFeatures/" +df_edit[df_edit['GameName'].str.contains('\.')]['finalName'].str.replace(".mp4",".npy")
+# # remove file if exists
+# files_to_remove.apply(lambda x: os.remove(x))
