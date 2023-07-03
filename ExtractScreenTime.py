@@ -49,8 +49,10 @@ def extract_screen_time_from_json(file_path, calcDiff=False):
     return events
 
 
-file_path = './SoccerNet/england_epl/2014-2015/2015-02-21 - 18-00 Chelsea 1 - 1 Burnley/Labels-cameras.json'
-events = extract_screen_time_from_json(file_path, calcDiff=True)
 
-for event in events:
-    print(event)
+if __name__ == "__main__":
+    #sample
+    file_path = './SoccerNet/england_epl/2014-2015/2015-02-21 - 18-00 Chelsea 1 - 1 Burnley/Labels-cameras.json'
+    events = extract_screen_time_from_json(file_path, calcDiff=True)
+    for event in events:
+        print(event)
